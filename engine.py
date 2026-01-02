@@ -1,4 +1,5 @@
 import json
+import sqlite3
 
 def run_reconciliation():
     #Load DATA
@@ -26,5 +27,34 @@ def run_reconciliation():
     else:
         print("System clean no stale accounts")
 
+
+def mover(old_records, new_records):
+    old_map = {user['id']: user for user in old_records}
+    movers_detected = []
+
+    for new_user in new_records:
+        user_id = new_user['id']
+        
+        #check if user existed in the old data
+        if user_id in old_map:
+            old_user = old_map[user_id]
+
+            #Mover LOGIC
+            if old_user['department'] != new_user['department']:
+                movers_detected.append({
+                    'id': user_id,
+                    'name': new_user['name'],
+                    'old_dept': old_user['department'],
+                    'new_dept': new_user['department']
+                })
+    return movers_detected
+
+
+
 if __name__ == '__main__':
+    old_hr = [{"id": "101", "name": "Alice", "department": "Sales"}]
+    new_hr = [{"id": "101", "name": "Alice", "department": "Engineering"}]
+    changes = mover(old_hr, new_hr)
+    for change in changes:
+        print(f"MOVER ALERT: {change['name']} moved from {change['old_dept']} -> {change['new_dept']}")
     run_reconciliation()
